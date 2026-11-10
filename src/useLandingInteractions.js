@@ -23,6 +23,9 @@ export function useLandingInteractions(scope, showPreview) {
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
     const cleanups = [];
     let activeTrigger = null;
+    let motionFrame = 0;
+    let scrollFrame = 0;
+    let socialTimer = 0;
 
     function showNavigation(trigger) {
       activeTrigger = trigger;
@@ -260,22 +263,137 @@ export function useLandingInteractions(scope, showPreview) {
       const resize = new ResizeObserver(updateCarousel);
       resize.observe(track);
       updateCarousel();
+
+      let autoplay = 0;
+      const startAutoplay = () => {
+        if (motion.matches || autoplay) return;
+        autoplay = window.setInterval(() => {
+          const positions = stops();
+          if (positions.length < 2) return;
+          const nextIndex = (nearestStop(positions) + 1) % positions.length;
+          scrollTo(positions[nextIndex]);
+        }, 5200);
+      };
+      const stopAutoplay = () => {
+        window.clearInterval(autoplay);
+        autoplay = 0;
+      };
+      carousel.addEventListener('pointerenter', stopAutoplay);
+      carousel.addEventListener('pointerleave', startAutoplay);
+      carousel.addEventListener('focusin', stopAutoplay);
+      carousel.addEventListener('focusout', startAutoplay);
+      startAutoplay();
       cleanups.push(() => {
+        stopAutoplay();
         resize.disconnect();
         track.removeEventListener('scroll', updateCarousel);
+        carousel.removeEventListener('pointerenter', stopAutoplay);
+        carousel.removeEventListener('pointerleave', startAutoplay);
+        carousel.removeEventListener('focusin', stopAutoplay);
+        carousel.removeEventListener('focusout', startAutoplay);
         controls.remove();
       });
     }
 
-    const reveals = all('.section-intro, .ai-coach__mockup-wrap, .broker-showcase, .verified__media, .instance-box');
+    const revealGroups = [
+      '.section-intro > *',
+      '.metric',
+      '.gateway-card',
+      '.liquidity-row',
+      '.account-card',
+      '.tier-row',
+      '.challenge-head, .challenge-sub, .challenge-stats, .challenge-actions',
+      '.step-item',
+      '.genesis-social__media, .genesis-feature',
+      '.ai-coach__mockup-wrap',
+      '.broker-showcase, .broker-card',
+      '.verified__media',
+      '.glow-image',
+      '.instance-box',
+      '.site-footer__inner > *',
+    ];
+    const reveals = all(revealGroups.join(', '));
+    const groupCounts = new Map();
+    reveals.forEach((element) => {
+      const group = element.parentElement;
+      const index = groupCounts.get(group) || 0;
+      groupCounts.set(group, index + 1);
+      element.classList.add('motion-reveal');
+      element.style.setProperty('--motion-delay', `${Math.min(index * 85, 510)}ms`);
+    });
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
-        entry.target.classList.add('revealed');
+        entry.target.classList.add('motion-in');
         observer.unobserve(entry.target);
       }
-    }, { threshold: 0.12 });
-    reveals.forEach((element) => { element.classList.add('scroll-reveal'); observer.observe(element); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+    reveals.forEach((element) => {
+      if (motion.matches) element.classList.add('motion-in');
+      else observer.observe(element);
+    });
+
+    const stepObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        for (const step of all('.step-item')) step.classList.toggle('is-motion-active', step === entry.target);
+      }
+    }, { threshold: 0.55, rootMargin: '-12% 0px -28% 0px' });
+    all('.step-item').forEach((step) => stepObserver.observe(step));
+
+    const socialFeatures = all('[data-social-feature]');
+    let socialIndex = 0;
+    const stopSocialMotion = () => {
+      window.clearInterval(socialTimer);
+      socialTimer = 0;
+    };
+    const startSocialMotion = () => {
+      if (motion.matches || socialTimer || socialFeatures.length < 2) return;
+      socialTimer = window.setInterval(() => {
+        socialIndex = (socialIndex + 1) % socialFeatures.length;
+        selectSocial(String(socialIndex));
+      }, 4300);
+    };
+    const socialSection = get('#genesis-social-section');
+    socialSection?.addEventListener('pointerenter', stopSocialMotion);
+    socialSection?.addEventListener('pointerleave', startSocialMotion);
+    socialSection?.addEventListener('focusin', stopSocialMotion);
+    socialSection?.addEventListener('focusout', startSocialMotion);
+    startSocialMotion();
+
+    function updateMotion() {
+      motionFrame = 0;
+      const ratio = Math.min(window.scrollY / Math.max(window.innerHeight, 1), 2.2);
+      root.style.setProperty('--page-scroll', ratio.toFixed(3));
+      root.style.setProperty('--hero-lift', `${Math.min(window.scrollY * -0.085, 0)}px`);
+      root.style.setProperty('--glow-drift', `${Math.min(window.scrollY * 0.035, 34)}px`);
+    }
+
+    function queueScrollMotion() {
+      if (motion.matches || motionFrame) return;
+      motionFrame = requestAnimationFrame(updateMotion);
+    }
+
+    function pointerMotion(event) {
+      if (motion.matches || scrollFrame) return;
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = 0;
+        const x = event.clientX / Math.max(window.innerWidth, 1) - 0.5;
+        const y = event.clientY / Math.max(window.innerHeight, 1) - 0.5;
+        root.style.setProperty('--pointer-x', x.toFixed(3));
+        root.style.setProperty('--pointer-y', y.toFixed(3));
+        const glow = get('.site-nav__glow-follow');
+        const nav = get('.site-nav');
+        if (glow && nav) {
+          const box = nav.getBoundingClientRect();
+          glow.style.transform = `translate3d(${event.clientX - box.left}px, ${event.clientY - box.top}px, 0)`;
+        }
+      });
+    }
+
+    updateMotion();
+    window.addEventListener('scroll', queueScrollMotion, { passive: true });
+    window.addEventListener('pointermove', pointerMotion, { passive: true });
 
     root.addEventListener('click', handleClick);
     root.addEventListener('keydown', handleKeys);
@@ -290,9 +408,20 @@ export function useLandingInteractions(scope, showPreview) {
       root.removeEventListener('keydown', handleKeys);
       document.removeEventListener('pointerdown', outsideMenus);
       window.removeEventListener('resize', resizeMenus);
+      window.removeEventListener('scroll', queueScrollMotion);
+      window.removeEventListener('pointermove', pointerMotion);
       document.body.classList.remove('menu-visible');
       observer.disconnect();
+      stepObserver.disconnect();
+      cancelAnimationFrame(motionFrame);
+      cancelAnimationFrame(scrollFrame);
+      stopSocialMotion();
+      socialSection?.removeEventListener('pointerenter', stopSocialMotion);
+      socialSection?.removeEventListener('pointerleave', startSocialMotion);
+      socialSection?.removeEventListener('focusin', stopSocialMotion);
+      socialSection?.removeEventListener('focusout', startSocialMotion);
       cleanups.forEach((cleanup) => cleanup());
     };
   }, [scope, showPreview]);
 }
+
