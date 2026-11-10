@@ -204,31 +204,67 @@ export function useLandingInteractions(scope, showPreview) {
       const track = carousel.querySelector('.splide__track');
       const slides = [...track.querySelectorAll('.splide__slide')];
       const bar = carousel.querySelector('.carousel-progress__bar');
+      const controls = document.createElement('div');
+      controls.className = 'landing-carousel-controls';
+      controls.setAttribute('role', 'group');
+      controls.setAttribute('aria-label', 'Carousel navigation');
       const pagination = document.createElement('div');
       pagination.className = 'landing-carousel-dots';
-      pagination.setAttribute('aria-label', 'Carousel navigation');
-      const buttons = slides.map((slide, index) => {
+
+      const makeButton = (label, className) => {
         const button = document.createElement('button');
         button.type = 'button';
-        button.setAttribute('aria-label', `Show slide ${index + 1}`);
-        button.addEventListener('click', () => track.scrollTo({
-          left: slide.offsetLeft - slides[0].offsetLeft,
-          behavior: motion.matches ? 'instant' : 'smooth',
-        }));
-        pagination.append(button);
+        button.className = className;
+        button.setAttribute('aria-label', label);
+        button.setAttribute('aria-controls', track.id);
         return button;
-      });
-      carousel.append(pagination);
-      const update = () => {
-        const active = slides.reduce((best, slide, index) =>
-          Math.abs(slide.offsetLeft - slides[0].offsetLeft - track.scrollLeft) <
-          Math.abs(slides[best].offsetLeft - slides[0].offsetLeft - track.scrollLeft) ? index : best, 0);
-        buttons.forEach((button, index) => button.setAttribute('aria-current', String(index === active)));
-        if (bar) bar.style.width = `${100 * (active + 1) / slides.length}%`;
       };
-      track.addEventListener('scroll', update, { passive: true });
-      update();
-      cleanups.push(() => { track.removeEventListener('scroll', update); pagination.remove(); });
+      const previous = makeButton('Previous slide', 'landing-carousel-arrow landing-carousel-arrow--previous');
+      const next = makeButton('Next slide', 'landing-carousel-arrow');
+      const dots = slides.map((_, index) => makeButton(`Show slide ${index + 1}`, 'landing-carousel-dot'));
+      pagination.append(...dots);
+      controls.append(previous, pagination, next);
+      carousel.append(controls);
+
+      const scrollTo = (left) => track.scrollTo({ left, behavior: motion.matches ? 'instant' : 'smooth' });
+      const position = (slide) => Math.min(slide.offsetLeft - slides[0].offsetLeft, track.scrollWidth - track.clientWidth);
+      const stops = () => [...new Set(slides.map(position))];
+      const nearestStop = (positions) => positions.reduce((best, left, index) =>
+        Math.abs(left - track.scrollLeft) < Math.abs(positions[best] - track.scrollLeft) ? index : best, 0);
+
+      function step(direction) {
+        const positions = stops();
+        const left = positions[nearestStop(positions) + direction];
+        if (left !== undefined) scrollTo(left);
+      }
+
+      function updateCarousel() {
+        const offsets = slides.map(position);
+        const positions = [...new Set(offsets)];
+        const current = nearestStop(positions);
+        controls.hidden = positions.length < 2;
+        previous.setAttribute('aria-disabled', String(current === 0));
+        next.setAttribute('aria-disabled', String(current === positions.length - 1));
+        dots.forEach((button, index) => {
+          const left = offsets[index];
+          button.hidden = index > 0 && left === offsets[index - 1];
+          button.setAttribute('aria-current', String(!button.hidden && left === positions[current]));
+        });
+        if (bar) bar.style.width = `${100 * (current + 1) / positions.length}%`;
+      }
+
+      previous.addEventListener('click', () => step(-1));
+      next.addEventListener('click', () => step(1));
+      dots.forEach((button, index) => button.addEventListener('click', () => scrollTo(position(slides[index]))));
+      track.addEventListener('scroll', updateCarousel, { passive: true });
+      const resize = new ResizeObserver(updateCarousel);
+      resize.observe(track);
+      updateCarousel();
+      cleanups.push(() => {
+        resize.disconnect();
+        track.removeEventListener('scroll', updateCarousel);
+        controls.remove();
+      });
     }
 
     const reveals = all('.section-intro, .ai-coach__mockup-wrap, .broker-showcase, .verified__media, .instance-box');
