@@ -33,6 +33,8 @@ The output is in `dist/`. Run `npm run preview` to serve it locally.
 
 The account and trading links open local demo dialogs. Links to sections scroll within the page. Links to other first-party pages open short local excerpts. The homepage is English and uses CSS-based motion in place of the source’s pinning and WebGL runtime. No service, authentication, or analytics integrations are included.
 
-## Deploy to GitHub Pages
+## Hosting
 
-Set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**. The workflow builds and publishes `dist/` on pushes to `main`. Use **Actions → Deploy landing page to GitHub Pages → Run workflow** for the first deployment if the initial push happened before Pages was enabled.
+Cloudflare Pages builds `main` from `omarreact/Enesixfx` with `npm run build` and serves `dist/` at [enesixfx.pages.dev](https://enesixfx.pages.dev/). GitHub Actions also checks the build on pushes to `main`.
+
+To publish with GitHub Pages separately, enable **GitHub Actions** as the Pages source in repository settings and manually run the **Build landing page** workflow.
