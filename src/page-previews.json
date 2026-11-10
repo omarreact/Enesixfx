@@ -1,0 +1,85 @@
+{
+  "partners": {
+    "title": "Partners Program",
+    "paragraphs": [
+      "Join a broker who treats you like family. Benefit from our industry-leading compensation structure, real-time commissions, daily withdrawals, and dedicated VIP support.",
+      "Connect with traders worldwide and expand your reach across multiple continents. Our partners benefit from a truly global platform with support in major financial hubs around the world."
+    ]
+  },
+  "market-news": {
+    "title": "Market News",
+    "paragraphs": [
+      "Stay on the pulse of market news and explore top movers powered by AI insights.",
+      "European stock indices closed mixed on Tuesday following the record highs touched in the previous session amid contrasting earnings results from the Eurozone's largest companies."
+    ]
+  },
+  "education": {
+    "title": "Genesis Academy",
+    "paragraphs": [
+      "Master the markets with our comprehensive educational resources.From beginner guides to advanced strategies, we've got you covered.",
+      "In this course, you will learn all the basics to start trading in the world of cryptocurrencies"
+    ]
+  },
+  "faq": {
+    "title": "Help Center",
+    "paragraphs": [
+      "Find out everything you need to know about opening an account or view commonly asked questions about managing your existing trading account.",
+      "Step-by-step guide to uploading your identity documents (Proof of ID & Proof of Address) for account verification. Verification typically takes 1-3 business days."
+    ]
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "paragraphs": [
+      "Answer a few quick questions and we'll route your request straight to the right specialist. Most replies land within 24 hours."
+    ]
+  },
+  "legal": {
+    "title": "Legal Documents",
+    "paragraphs": [
+      "Review our legal policies and regulatory documentation",
+      "If you have questions about any of our legal documents or need clarification on our policies, please don’t hesitate to contact us."
+    ]
+  },
+  "about": {
+    "title": "About Us",
+    "paragraphs": [
+      "Since 2023 we've been on a mission to make professional-grade trading accessible to everyone. We believe in transparency, innovation, and putting our clients first.",
+      "At Genesis Markets, our mission is straightforward: to give traders fair, transparent access to the global financial markets. We believe opportunity in trading shouldn’t be limited by background, experience, or access to professional-grade tools."
+    ]
+  },
+  "terms-conditions": {
+    "title": "Terms & Conditions",
+    "paragraphs": [
+      "Version 2.0 - Effective September 2026 - Supersedes all prior versions",
+      "These Terms & Conditions (\"Terms\" or \"Agreement\") constitute a legally binding agreement between Genesis FX Markets Ltd (hereinafter referred to as \"GenesisFX\", \"the Company\", \"we\", \"us\", or \"our\") and any natural person or corporate entity accessing our services (hereinafter referred to as \"the Client\", \"User\", \"you\", or \"your\")."
+    ]
+  },
+  "privacy-policy": {
+    "title": "Privacy Policy",
+    "paragraphs": [
+      "Version 2.0 - Effective September 2026 - Supersedes all prior versions",
+      "Genesis FX Markets Ltd (\"GenesisFX,\" \"Company,\" \"we,\" \"us,\" or \"our\") is committed to protecting the privacy, confidentiality, and security of personal data collected from clients, website visitors, trading portal users, live stream broadcasters, and platform participants (\"you,\" \"your\")."
+    ]
+  },
+  "anti-money-laundering": {
+    "title": "Anti-Money Laundering",
+    "paragraphs": [
+      "Version 2.0 - Effective September 2026 - Supersedes all prior versions",
+      "Genesis FX Markets Ltd (\"GenesisFX\", \"the Company\", \"we\", \"us\") is dedicated to upholding the highest international standards of Anti-Money Laundering (AML), Countering the Financing of Terrorism (CFT), Countering Proliferation Financing (CPF), and Know Your Customer (KYC) compliance."
+    ]
+  },
+  "risk-disclosure": {
+    "title": "Risk Disclosure",
+    "paragraphs": [
+      "Version 2.0 - Effective September 2026 - Supersedes all prior versions",
+      "Trading Contracts for Difference (CFDs), Foreign Exchange (Forex), Precious Metals, Commodities, Market Indices, and Digital Asset Derivatives carries an exceptionally high level of financial risk and can result in the complete loss of all invested capital. These products are complex, highly volatile, and leverage-magnified. You should never invest capital that you cannot afford to lose entirely. You should carefully consider whether trading leveraged derivatives is suitable for your financial circumstances, investment objectives, and risk tolerance."
+    ]
+  },
+  "cookie-policy": {
+    "title": "Cookie Policy",
+    "paragraphs": [
+      "Version 2.0 - Effective September 2026 - Supersedes all prior versions",
+      "This Cookie Policy governs the use of cookies and tracking technologies by Genesis FX Markets Ltd (\"Company\", \"GenesisFX\", \"we\", \"us\", or \"our\") across our official website (https://www.genesisfxmarkets.com/) and all related trading portals, subdomains, and web applications (collectively, the \"Platform\")."
+    ]
+  }
+}

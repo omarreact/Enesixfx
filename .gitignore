@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.log
+/evidence/
+/design-qa.md
+/source-inventory.md
+/genesisfxmarkets-landing.html
