@@ -1,0 +1,59 @@
+name: Cloudflare Pages Runtime QA
+
+on:
+  push:
+    branches:
+      - qa/cloudflare-pages-runtime-20261117
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE_URL: https://enesixfx.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+      - name: HTTP smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in / /404-qa-probe; do
+            code="$(curl -L --connect-timeout 10 --max-time 30 -sS -o /tmp/body -w '%{http_code}' "$BASE_URL$path")"
+            echo "$path -> $code"
+            if [ "$path" = "/" ]; then test "$code" = "200"; else test "$code" = "404" -o "$code" = "200"; fi
+          done
+      - name: Browser smoke
+        shell: bash
+        run: |
+          mkdir -p /tmp/pwqa && cd /tmp/pwqa
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund @playwright/test@1.56.1
+          CHROME_BIN="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME_BIN"
+          cat > runtime.mjs <<'EOF'
+          import { chromium } from "@playwright/test";
+          const base=process.env.BASE_URL;
+          const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,args:["--no-sandbox","--disable-dev-shm-usage"]});
+          const failures=[];
+          for(const c of [{name:"desktop",viewport:{width:1440,height:900}},{name:"mobile",viewport:{width:390,height:844}}]){
+            const context=await browser.newContext({viewport:c.viewport});
+            const page=await context.newPage();
+            const errors=[];
+            page.on("pageerror",e=>errors.push(String(e)));
+            const response=await page.goto(base,{waitUntil:"networkidle",timeout:45000});
+            const status=response?.status()||0;
+            const body=(await page.locator("body").innerText()).trim();
+            console.log(c.name,status,await page.title(),"body",body.length);
+            if(status!==200) failures.push(c.name+" HTTP "+status);
+            if(body.length<200) failures.push(c.name+" body too small");
+            failures.push(...errors.map(e=>c.name+" pageerror "+e));
+            await context.close();
+          }
+          await browser.close();
+          if(failures.length){console.error(failures.join("\n"));process.exit(1);}
+          EOF
+          CHROME_BIN="$CHROME_BIN" node runtime.mjs
